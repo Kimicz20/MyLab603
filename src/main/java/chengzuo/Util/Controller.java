@@ -6,10 +6,7 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * MutliThread with Socket
@@ -29,28 +26,23 @@ public class Controller {
 			.synchronizedMap(new HashMap<String, List<TestCase>>());
 
 	// thread pool
-	private static ExecutorService executorService = Executors.newFixedThreadPool(3);
+	private static ExecutorService executorService = Executors.newCachedThreadPool();
 
 	// result
 	private static List<Future<Pair<String,List<TestCase>>>> resultList =
 			new ArrayList<Future<Pair<String,List<TestCase>>>>();
 
 	// deploy and handle
-	private static void handleMapping(Map<String, File[]> files) {
+	private static void handleMapping(Pair<String, File> data) {
 
-		if (files == null || files.size() == 0) {
+		if (data == null) {
 			logger.debug("please choose file to send!");
 		}
-		List<Pair<String, String>> rPList = IP_TYPE_DEPLOY.getDeploy();
-
-		for (Pair<String, String> p : rPList) {
-			String ip = p.getFirst();
-			String type = p.getSecond();
-
-			logger.debug("connect ip is:" + ip + " ,type is:" + type);
-			File[] fs = files.get(type);
-			resultList.add(executorService.submit(new HandelThread(ip, fs, type)));
-		}
+		String IP = IP_TYPE_DEPLOY.getIPbyType(data.getFirst());
+		String Type = data.getFirst();
+		File f = data.getSecond();
+		logger.debug("connect ip is:" + IP + " ,type is:" + Type);
+		resultList.add(executorService.submit(new HandelThread(IP, f, Type)));
 	}
 
 	// handle result
@@ -66,16 +58,18 @@ public class Controller {
 		}
 	}
 
-	public static void Run(Map<String, File[]> files) {
+	public static void Run(Pair<String, File> data) {
 
 		// deploy, distribute and accept
-		handleMapping(files);
+		handleMapping(data);
 
-		// close
-		executorService.shutdown();
-		
 		// handle result
 		handleResult();
+	}
+
+	public static void Close(Pair<String, File> data) {
+		// close
+		executorService.shutdown();
 	}
 
 }

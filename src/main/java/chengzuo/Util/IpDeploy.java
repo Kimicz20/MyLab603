@@ -1,6 +1,9 @@
 package chengzuo.Util;
 
 import chengzuo.Bean.Pair;
+
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,6 +32,15 @@ public class IpDeploy {
 
 	public Pair<String, String> getDeployAtIndex(int index) {
 		return deploy.get(index);
+	}
+
+	public String getIPbyType(String type) {
+		for (Pair<String,String> d:deploy){
+			if(d.getSecond().equals(type)){
+				return d.getFirst();
+			}
+		}
+		return null;
 	}
 
 	public void setDeploy(List<Pair<String, String>> deploy) {
@@ -79,11 +91,10 @@ public class IpDeploy {
 		Properties prop = new Properties();
 		Pair<String,String> rPair = new Pair<String,String>();
 		try {
-			// read .properties
-//			InputStream in = new BufferedInputStream(new FileInputStream("classpath:ip.properties"));
-			InputStream in = Class.forName(IpDeploy.class.getName()).getResourceAsStream("/ip.properties");
-			// load list
-			prop.load(in); 
+            // read .properties
+			InputStream in = new BufferedInputStream(new FileInputStream("src/ip.properties"));
+            // load list
+			prop.load(in);
 			Iterator<String> it = prop.stringPropertyNames().iterator();
 			while (it.hasNext()) {
 				String key = it.next();

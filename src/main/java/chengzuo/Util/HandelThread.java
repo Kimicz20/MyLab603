@@ -1,20 +1,16 @@
 package chengzuo.Util;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import chengzuo.Bean.Pair;
+import chengzuo.Bean.TestCase;
+import org.apache.log4j.Logger;
+
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
-import chengzuo.Bean.Pair;
-import chengzuo.Bean.TestCase;
-import org.apache.log4j.Logger;
 
 
 public class HandelThread implements Callable<Pair<String,List<TestCase>>> {
@@ -38,7 +34,11 @@ public class HandelThread implements Callable<Pair<String,List<TestCase>>> {
 	String type = null;
 
 	public List<TestCase> testCaseList = Collections.synchronizedList(new ArrayList<TestCase>());
-	
+
+	public HandelThread(String ip, File files, String type) {
+		this(ip,new File[]{files},type);
+	}
+
 	public HandelThread(String ip, File[] files, String type) {
 		this.IP = ip;
 		this.files = files;
