@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.concurrent.ExecutionException;
 
 public class demo extends JFrame {
 
@@ -60,7 +61,13 @@ public class demo extends JFrame {
                 File file = jfc.getSelectedFile();
                 if (file != null) {
                     Controller.Run(new Pair<String, File>("function", file));
-                    System.out.println(Controller.testCaseMap.get("function").size());
+                    try {
+                        System.out.println(Controller.getResult("function"));
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    } catch (ExecutionException e1) {
+                        e1.printStackTrace();
+                    }
                 }
             }
         });
@@ -78,7 +85,13 @@ public class demo extends JFrame {
 
                 if (file != null) {
                     Controller.Run(new Pair<String, File>("performance", file));
-                    System.out.println(Controller.testCaseMap.get("performance").size());
+                    try {
+                        System.out.println(Controller.getResult("performance"));
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    } catch (ExecutionException e1) {
+                        e1.printStackTrace();
+                    }
                 }
             }
         });
@@ -96,7 +109,13 @@ public class demo extends JFrame {
 
                 if (file != null) {
                     Controller.Run(new Pair<String, File>("time", file));
-                    System.out.println(Controller.testCaseMap.get("time").size());
+                    try {
+                        System.out.println(Controller.getResult("time"));
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    } catch (ExecutionException e1) {
+                        e1.printStackTrace();
+                    }
                 }
             }
         });
