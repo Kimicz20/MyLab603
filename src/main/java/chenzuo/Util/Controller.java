@@ -1,7 +1,7 @@
-package chengzuo.Util;
+package chenzuo.Util;
 
-import chengzuo.Bean.Pair;
-import chengzuo.Bean.TestCase;
+import chenzuo.Bean.Pair;
+import chenzuo.Bean.TestCase;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -71,15 +71,24 @@ public class Controller {
 //	}
 
 	//return result
-	public static List<TestCase> getResult(String Type) throws ExecutionException, InterruptedException {
-		if(Type.equals("function")){
-			return funFuture.get().getSecond();
-		}
-		if(Type.equals("performance")){
-			return perFuture.get().getSecond();
-		}
-		if(Type.equals("time")){
-			return timeFuture.get().getSecond();
+	public static List<TestCase> getResult(String Type) {
+		try {
+			if(Type.equals("function")){
+                return funFuture.get().getSecond();
+            }
+			if(Type.equals("performance")){
+                return perFuture.get().getSecond();
+            }
+			if(Type.equals("time")){
+                return timeFuture.get().getSecond();
+            }
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			//close ThreadPoolExecutor
+//			if(funFuture.isDone() && perFuture.isDone() &&  timeFuture.isDone()){
+//				Close();
+//			}
 		}
 		return null;
 	}
@@ -93,7 +102,7 @@ public class Controller {
 //		handleResult();
 	}
 
-	public static void Close(Pair<String, File> data) {
+	public static void Close() {
 		// close
 		executorService.shutdown();
 	}

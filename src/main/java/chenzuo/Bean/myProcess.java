@@ -1,4 +1,4 @@
-package chengzuo.Bean;
+package chenzuo.Bean;
 
 public class myProcess {
 

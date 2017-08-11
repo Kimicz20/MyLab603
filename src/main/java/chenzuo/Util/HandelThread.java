@@ -1,13 +1,16 @@
-package chengzuo.Util;
+package chenzuo.Util;
 
-import chengzuo.Bean.Pair;
-import chengzuo.Bean.TestCase;
+import chenzuo.Bean.Pair;
+import chenzuo.Bean.TestCase;
+import chenzuo.Util.ssh.Scpclient;
 import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -73,69 +76,52 @@ public class HandelThread implements Callable<Pair<String,List<TestCase>>> {
 
 	// send xml files
 	public void send() {
-		DataInputStream fis = null;
-		try {
 
+		String remoteTargetDirectory= "/home/8_11_Finall/Test/testcase/";
+		Scpclient scp = Scpclient.getInstance(IP, 22,"root","1");
+		try {
 			dos = new DataOutputStream(socket.getOutputStream());
 
-			int bufferSize = 1024;
-			byte[] buf = new byte[bufferSize * bufferSize];
+			for(File f:files) {
+				//send file
+				scp.putFile(f.getAbsolutePath(), f.getName(), remoteTargetDirectory, null);
 
-			for (File fi : files) {
-				String filePath = fi.getAbsolutePath();
-				fis = new DataInputStream(new BufferedInputStream(new FileInputStream(filePath)));
-				String type;
-
-				// send fileName
-				type = fi.getName()+"*";
-				dos.write(type.getBytes());
+				//send filename
+				dos.write(f.getName().getBytes());
 				dos.flush();
 
-				// send fileSize
-				type = Long.toString(fi.length())+"*";
-				dos.write(type.getBytes());
-				dos.flush();
-
-				// flush
-				Arrays.fill(buf, (byte) 0);
-				int read = 0;
-				while ((read = fis.read(buf)) != -1) {
-					dos.write(buf, 0, read);
-				}
-				dos.flush();
-				
-				//exit flag
-				dos.write("*#exit#".getBytes());
-				dos.flush();
 			}
-			logger.debug("success sendfile");
-		} catch (Exception e) {
+		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				fis.close();
-			} catch (IOException e) {
-				logger.error("close fis error ,cause by " + e.getMessage());
-			}
 		}
+
+
 	}
 
 	// receive result
 	public void recv() {
-		String content = "";
 		int bufferSize = 500;
 		byte[] buf = new byte[bufferSize];
-		String tmp = "";
+		String data = "";
 		try {
 			dis = new DataInputStream(socket.getInputStream());
 			while (dis.read(buf) != -1) {
-				tmp = new String(buf, "UTF-8").trim();
-				content += tmp;
-//				logger.debug("recevice data:" + content);
-				Arrays.fill(buf, (byte) 0);
+				data = new String(buf, "UTF-8").trim();
+				logger.debug("recevice data:" + data);
+				if("exit".equals(data))
+					break;
 			}
+			Scpclient scp = Scpclient.getInstance(IP, 22,"root","1");
+			String remoteFile = "/home/8_11_Finall/Test/result/result.txt";
+			String localTargetDirectory = "F:\\陈佐\\3.项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\Util\\ssh";
+
+			//
+			long l = System.currentTimeMillis();
+			scp.getFile(remoteFile, localTargetDirectory);
+			long s = System.currentTimeMillis();
+			logger.debug("begin time is:"+(s-l));
 			// str2model store in list
-			TestCaseConvertUtil.buildTestCaseList(type, testCaseList, content);
+			TestCaseConvertUtil.buildTestCaseList(type, testCaseList, localTargetDirectory+"\\result.txt");
 
 			logger.debug("success recevice");
 		} catch (Exception e) {

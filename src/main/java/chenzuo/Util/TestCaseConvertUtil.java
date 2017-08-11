@@ -1,6 +1,6 @@
-package chengzuo.Util;
+package chenzuo.Util;
 
-import chengzuo.Bean.*;
+import chenzuo.Bean.*;
 
 import java.io.*;
 import java.util.*;
@@ -223,11 +223,13 @@ public class TestCaseConvertUtil {
 	/***
 	 * 根据字符串 构造测试用例链表
 	 *
-	 * @param str
+	 * @param fileName
 	 *            从服务器获取的字符串
 	 * @return
 	 */
-	public static void buildTestCaseList(String type,List<TestCase> list, String str) {
+	public static void buildTestCaseList(String type,List<TestCase> list, String fileName) {
+
+		String str = readFileByLines(fileName);
 
 		// 1.按*号将测试用例划分
 		String[] tmp = str.split("\\*");
@@ -410,7 +412,7 @@ public class TestCaseConvertUtil {
 
 	public static void main(String[] args) {
 		String str = readFileByLines(
-				"F:\\陈佐\\3.项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chengzuo\\Util\\result.txt");
+				"F:\\陈佐\\3.项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\Util\\result.txt");
 
 		List<TestCase> list = new ArrayList();
 		buildTestCaseList("time",list, str);
