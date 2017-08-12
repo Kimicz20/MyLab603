@@ -1,10 +1,13 @@
 package chenzuo.Util;
 
+import ch.ethz.ssh2.Connection;
+import ch.ethz.ssh2.SCPClient;
+import ch.ethz.ssh2.Session;
+import chenzuo.Bean.IPNode;
 import chenzuo.Bean.Pair;
 import chenzuo.Bean.TestCase;
 import chenzuo.Util.ssh.Scpclient;
 import org.apache.log4j.Logger;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -14,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 
 public class HandelThread implements Callable<Pair<String,List<TestCase>>> {
@@ -21,10 +26,11 @@ public class HandelThread implements Callable<Pair<String,List<TestCase>>> {
 	private Logger logger = Logger.getLogger(this.getClass());
 
 	// server's IP and Port
-	protected String IP;
+	protected IPNode node;
 	protected int PORT = 5555;
 
 	private Socket socket = null;
+    private Scpclient scpclient;
 
 	// Stream based on socket
 	DataOutputStream dos = null;
@@ -33,27 +39,27 @@ public class HandelThread implements Callable<Pair<String,List<TestCase>>> {
 	// testcases' Files
 	File[] files = null;
 
-	// type:0,function;1,performance;2,time
-	String type = null;
-
 	public List<TestCase> testCaseList = Collections.synchronizedList(new ArrayList<TestCase>());
 
-	public HandelThread(String ip, File files, String type) {
-		this(ip,new File[]{files},type);
+	public HandelThread(IPNode node, File files) {
+		this(node,new File[]{files});
 	}
 
-	public HandelThread(String ip, File[] files, String type) {
-		this.IP = ip;
+	public HandelThread(IPNode node, File[] files) {
+		this.node = node;
 		this.files = files;
-		this.type = type;
+		scpclient = new Scpclient(node.getIp());
 	}
 
 	// connect socket
 	public boolean connection() {
+		//prehandle start
+//		scpclient.preCon();
+		//connect socket
 		try {
-			socket = new Socket(IP, PORT);
+			socket = new Socket(node.getIp(), PORT);
 			if (socket != null) {
-				logger.debug("success connection");
+				logger.debug("connection "+node.getIp() +" success");
 				return true;
 			}
 		} catch (Exception e) {
@@ -65,9 +71,11 @@ public class HandelThread implements Callable<Pair<String,List<TestCase>>> {
 	// close socket
 	public void close() {
 		try {
+			node.setBusy(false);
 			dos.close();
 			dis.close();
 			socket.close();
+			scpclient.close();
 			logger.debug("socket close");
 		} catch (IOException e) {
 			logger.error("close socket error ,cause by " + e.getMessage());
@@ -78,24 +86,20 @@ public class HandelThread implements Callable<Pair<String,List<TestCase>>> {
 	public void send() {
 
 		String remoteTargetDirectory= "/home/8_11_Finall/Test/testcase/";
-		Scpclient scp = Scpclient.getInstance(IP, 22,"root","1");
 		try {
 			dos = new DataOutputStream(socket.getOutputStream());
-
 			for(File f:files) {
 				//send file
-				scp.putFile(f.getAbsolutePath(), f.getName(), remoteTargetDirectory, null);
-
+				scpclient.putFile(f.getAbsolutePath(), f.getName(), remoteTargetDirectory, null);
+				logger.debug("success putFile");
 				//send filename
 				dos.write(f.getName().getBytes());
 				dos.flush();
-
 			}
+			logger.debug(TimeUnit.SECONDS+": success send");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-
 	}
 
 	// receive result
@@ -111,18 +115,15 @@ public class HandelThread implements Callable<Pair<String,List<TestCase>>> {
 				if("exit".equals(data))
 					break;
 			}
-			Scpclient scp = Scpclient.getInstance(IP, 22,"root","1");
-			String remoteFile = "/home/8_11_Finall/Test/result/result.txt";
-			String localTargetDirectory = "F:\\陈佐\\3.项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\Util\\ssh";
 
+			String remoteFile = "/home/8_11_Finall/Test/result/result.txt";
+			String localTargetDirectory = "E:\\项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\Util\\ssh";
 			//
 			long l = System.currentTimeMillis();
-			scp.getFile(remoteFile, localTargetDirectory);
-			long s = System.currentTimeMillis();
-			logger.debug("begin time is:"+(s-l));
+			scpclient.getFile(remoteFile, localTargetDirectory);
+			logger.debug("file get ok,cost time is:"+(System.currentTimeMillis()-l)+" s");
 			// str2model store in list
-			TestCaseConvertUtil.buildTestCaseList(type, testCaseList, localTargetDirectory+"\\result.txt");
-
+			TestCaseConvertUtil.buildTestCaseList(node.getType(), testCaseList, localTargetDirectory+"\\result.txt");
 			logger.debug("success recevice");
 		} catch (Exception e) {
 			logger.debug("failed recevice , cause by " + e.getCause());
@@ -140,7 +141,6 @@ public class HandelThread implements Callable<Pair<String,List<TestCase>>> {
 			// 4.close socket
 			close();
 		}
-		return new Pair<String,List<TestCase>>(type,testCaseList);
+		return new Pair<String,List<TestCase>>(node.getType(),testCaseList);
 	}
-
 }

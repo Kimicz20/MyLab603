@@ -61,7 +61,7 @@ public class demo extends JFrame {
                 if (file != null) {
                     Controller.Run(new Pair<String, File>("function", file));
                     try {
-                        System.out.println(Controller.getResult("function"));
+//                        System.out.println(Controller.getResult("function"));
                     } catch (Exception e1) {
                         e1.printStackTrace();
                     }

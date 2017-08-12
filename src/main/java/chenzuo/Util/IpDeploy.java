@@ -1,93 +1,45 @@
 package chenzuo.Util;
 
+import chenzuo.Bean.IPNode;
 import chenzuo.Bean.Pair;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 
 public class IpDeploy {
 
+	//
+	private static BlockingQueue waitQueue = new LinkedBlockingQueue(4);
+
 	//list of ip
-	private List<String> ips;
-	//depoly: ip - type 
-	private List<Pair<String,String>> deploy;
-	
-	public List<String> getIps() {
-		return ips;
-	}
-
-	public void setIps(List<String> ips) {
-		this.ips = ips;
-	}
-
-	public List<Pair<String, String>> getDeploy() {
-		return deploy;
-	}
-
-	public Pair<String, String> getDeployAtIndex(int index) {
-		return deploy.get(index);
-	}
-
-	public String getIPbyType(String type) {
-		for (Pair<String,String> d:deploy){
-			if(d.getSecond().equals(type)){
-				return d.getFirst();
-			}
-		}
-		return null;
-	}
-
-	public void setDeploy(List<Pair<String, String>> deploy) {
-		this.deploy = deploy;
-	}
+	private List<IPNode> ips = new ArrayList<>();
 	
 	IpDeploy(){
-		//1.get the properties
- 		Pair<String,String> rP =  openProperties();
-		//2.build ips and deploy
-		build(rP);
+		buildFromProperties();
 	}
-	
-	//tranfer 
-	private void build(Pair<String,String> rP) {
-		
-		String ip = rP.getFirst();
-		String deployS = rP.getSecond();
 
-		ips = new ArrayList<String>();
-		String[] tmpL = ip.split(",");
-		for(String r:tmpL) {
-			ips.add(r);
+    public List<IPNode> findNodeFree(int index){
+		List<IPNode> nodes = new ArrayList<>(index);
+		int i=1;
+		for(IPNode node:ips){
+			if(i<=index && !node.isBusy()){
+				node.setBusy(true);
+				nodes.add(node);
+				i++;
+			}else{
+				break;
+			}
 		}
-		
-		deploy = new ArrayList<Pair<String,String>>();
-		
-		tmpL = deployS.split(";");
-		for(String r:tmpL) {
-			String[] t = r.split(",");
-			String v="";
-			if("0".equals(t[1])) {
-				v = "function";
-			}
-			if("1".equals(t[1])) {
-				v = "performance";
-			}
-			if("2".equals(t[1])) {
-				v = "time";
-			}
-			String ipS = ips.get(Integer.valueOf(t[0]));
-			deploy.add(new Pair<String,String>(ipS,v));
-		}
+		return nodes;
 	}
-	
+
 	//read properties
-	private Pair<String,String> openProperties() {
+	private void buildFromProperties() {
 		Properties prop = new Properties();
 		Pair<String,String> rPair = new Pair<String,String>();
 		try {
@@ -101,18 +53,17 @@ public class IpDeploy {
 				String value = prop.getProperty(key);
 				//read ips
 				if(key.equals("ip")) {
-					rPair.setFirst(value);
-				}
-				//read deploy
-				if(key.equals("deploy")) {
-					rPair.setSecond(value);;
+					String[] tmpL = value.split(",");
+					for(String r:tmpL) {
+						IPNode node = new IPNode(r);
+						ips.add(node);
+					}
 				}
 			}
 			in.close();
 		} catch (Exception e) {
 			System.out.println(e);
 		}
-		return rPair;
 	}
 
 	//test 
