@@ -1,13 +1,12 @@
-package chenzuo.Util;
+package chenzuo.Service;
 
-import ch.ethz.ssh2.Connection;
-import ch.ethz.ssh2.SCPClient;
-import ch.ethz.ssh2.Session;
 import chenzuo.Bean.IPNode;
 import chenzuo.Bean.Pair;
 import chenzuo.Bean.TestCase;
-import chenzuo.Util.ssh.Scpclient;
+import chenzuo.Util.ScpClientUtil;
+import chenzuo.Util.TestCaseConvertUtil;
 import org.apache.log4j.Logger;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -18,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 
 public class HandelThread implements Callable<Pair<String,List<TestCase>>> {
@@ -30,7 +28,7 @@ public class HandelThread implements Callable<Pair<String,List<TestCase>>> {
 	protected int PORT = 5555;
 
 	private Socket socket = null;
-    private Scpclient scpclient;
+    private ScpClientUtil scpclient;
 
 	// Stream based on socket
 	DataOutputStream dos = null;
@@ -48,7 +46,7 @@ public class HandelThread implements Callable<Pair<String,List<TestCase>>> {
 	public HandelThread(IPNode node, File[] files) {
 		this.node = node;
 		this.files = files;
-		scpclient = new Scpclient(node.getIp());
+		scpclient = new ScpClientUtil(node.getIp());
 	}
 
 	// connect socket
@@ -117,7 +115,7 @@ public class HandelThread implements Callable<Pair<String,List<TestCase>>> {
 			}
 
 			String remoteFile = "/home/8_11_Finall/Test/result/result.txt";
-			String localTargetDirectory = "E:\\项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\Util\\ssh";
+			String localTargetDirectory = "F:\\陈佐\\3.项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\File";
 			//
 			long l = System.currentTimeMillis();
 			scpclient.getFile(remoteFile, localTargetDirectory);

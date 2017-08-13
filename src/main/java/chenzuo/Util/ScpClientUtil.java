@@ -1,16 +1,13 @@
-package chenzuo.Util.ssh;
+package chenzuo.Util;
 
-import ch.ethz.ssh2.Connection;
-import ch.ethz.ssh2.SCPClient;
-import ch.ethz.ssh2.Session;
-import ch.ethz.ssh2.StreamGobbler;
+import ch.ethz.ssh2.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Scpclient {
+public class ScpClientUtil {
     private org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
     private static String  DEFAULTCHART="UTF-8";
     private Connection conn;
@@ -19,7 +16,7 @@ public class Scpclient {
     private String password = "1";
     boolean flg=false;
 
-    public Scpclient(String IP) {
+    public ScpClientUtil(String IP) {
         this.ip = IP;
     }
 
@@ -36,8 +33,8 @@ public class Scpclient {
         return flg;
     }
 
-    public void preCon(){
-       execute("sh /home/8_11_Finall/start.sh");
+    public String preCon(){
+        return execute("sh /home/8_11_Finall/start.sh");
     }
 
     public void close(){
@@ -48,10 +45,9 @@ public class Scpclient {
         String result="";
         try {
             if(login()){
-                Session session= conn.openSession();//打开一个会话
-                session.execCommand(cmd);//执行命令
+                Session session= conn.openSession();
+                session.execCommand(cmd);
                 result=processStdout(session.getStdout(),DEFAULTCHART);
-                //如果为得到标准输出为空，说明脚本执行出错了
                 if(StringUtils.isBlank(result)){
                     result=processStdout(session.getStderr(),DEFAULTCHART);
                 }
@@ -71,6 +67,8 @@ public class Scpclient {
             String line=null;
             while((line=br.readLine()) != null){
                 buffer.append(line+"\n");
+//                if("exit".equals(line))
+//                    break;
             }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -107,15 +105,15 @@ public class Scpclient {
     }
 
     public static void main(String[] args) {
-        Scpclient rec = new Scpclient("192.168.0.131");
+        ScpClientUtil rec = new ScpClientUtil("192.168.0.131");
         //执行命令
-//        System.out.println(rec.execute("sh /home/8_11_Finall/start.sh"));
+        System.out.println(rec.execute("sh /home/8_11_Finall/start.sh"));
 
-        String remoteFile = "/home/8_11_Finall/Test/result/testaa.txt";
-        String localTargetDirectory = "E:\\项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\Util\\ssh";
+//        String remoteFile = "/home/8_11_Finall/Test/result/testaa.txt";
+//        String localTargetDirectory = "E:\\项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\Util\\ssh";
 //        rec.getFile(remoteFile, localTargetDirectory);
-        String remoteTargetDirectory= "/home/8_11_Finall/Test/testcase/";
-        File f = new File("E:\\项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\Util\\ssh\\testaa.txt");
-        rec.putFile(f.getAbsolutePath(),"testaa.txt",remoteTargetDirectory,null);
+//        String remoteTargetDirectory= "/home/8_11_Finall/Test/testcase/";
+//        File f = new File("E:\\项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\Util\\ssh\\testaa.txt");
+//        rec.putFile(f.getAbsolutePath(),"testaa.txt",remoteTargetDirectory,null);
     }
 }

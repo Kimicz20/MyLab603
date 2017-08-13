@@ -1,7 +1,4 @@
-package chenzuo.Util;
-
-import chenzuo.Bean.IPNode;
-import chenzuo.Bean.Pair;
+package chenzuo.Bean;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -11,7 +8,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
-public class IpDeploy {
+public class IPDeploy {
 
 	//
 	private static BlockingQueue waitQueue = new LinkedBlockingQueue(4);
@@ -19,7 +16,7 @@ public class IpDeploy {
 	//list of ip
 	private List<IPNode> ips = new ArrayList<>();
 	
-	IpDeploy(){
+	public IPDeploy(){
 		buildFromProperties();
 	}
 
@@ -68,6 +65,6 @@ public class IpDeploy {
 
 	//test 
 	public static void main(String[] args) {
-		IpDeploy p = new IpDeploy();
+		IPDeploy p = new IPDeploy();
 	}
 }

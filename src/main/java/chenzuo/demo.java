@@ -1,7 +1,7 @@
 package chenzuo;
 
 import chenzuo.Bean.Pair;
-import chenzuo.Util.Controller;
+import chenzuo.Controller.Controller;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
