@@ -34,7 +34,7 @@ public class ScpClientUtil {
     }
 
     public String preCon(){
-        return execute("sh /home/8_11_Finall/start.sh");
+        return execute("sh /home/8_13_Finall/start.sh");
     }
 
     public void close(){

@@ -59,9 +59,12 @@ public class demo extends JFrame {
                 jfc.showDialog(new JLabel(), "select");
                 File file = jfc.getSelectedFile();
                 if (file != null) {
-                    Controller.Run(new Pair<String, File>("function", file));
+                    Controller.Run(new Pair<String, File>("Function", file));
                     try {
-//                        System.out.println(Controller.getResult("function"));
+                        Thread.sleep(700);
+                        while (!Controller.dataQueue.isEmpty()){
+                            logger.debug(Controller.dataQueue.poll().size());
+                        }
                     } catch (Exception e1) {
                         e1.printStackTrace();
                     }
