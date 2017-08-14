@@ -3,18 +3,15 @@ package chenzuo.Controller;
 import chenzuo.Bean.IPDeploy;
 import chenzuo.Bean.IPNode;
 import chenzuo.Bean.Pair;
-import chenzuo.Bean.TestCase;
 import chenzuo.Service.HandelService;
 import chenzuo.Service.PreConnService;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * MutliThread with Socket and Scp
@@ -33,10 +30,7 @@ public class Controller {
     private static ExecutorService executorService = Executors.newCachedThreadPool();
 
     //connect by scp
-    private static boolean preCon =true;
-
-    // queue store data
-    public static Queue<List<TestCase>> dataQueue = new LinkedBlockingQueue<>();
+    private static boolean preCon = true;
 
     // deploy and handle
     private static void handleMapping(Pair<String, File> data) {
@@ -65,7 +59,7 @@ public class Controller {
     public static void execute(String type, int num, File[] file) {
 
         //pre start
-        if(preCon){
+        if (preCon) {
             conFuture = executorService.submit(new PreConnService(new IPNode("192.168.0.131")));
             try {
                 Thread.sleep(30);
@@ -90,10 +84,11 @@ public class Controller {
         executorService.shutdown();
     }
 
-    public static void Run(Pair<String, File> data,boolean p) {
+    public static void Run(Pair<String, File> data, boolean p) {
         preCon = p;
         Run(data);
     }
+
     public static void Run(Pair<String, File> data) {
         try {
             // deploy, distribute and accept

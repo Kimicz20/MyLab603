@@ -1,14 +1,10 @@
 package chenzuo.Service;
 
 import chenzuo.Bean.IPNode;
-import chenzuo.Bean.TestCase;
 import chenzuo.Controller.Controller;
 import chenzuo.Util.ScpClientUtil;
-import chenzuo.Util.TcConvertUtil;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -39,12 +35,6 @@ public class RecvTransService implements Callable {
 
         //delete all files
         scpclient.execute("rm -rf "+remotePath+"*");
-        // str2model store in map with fileIndex
-        List<TestCase> testCaseList = new ArrayList<>();
-        TcConvertUtil.buildTestCaseList(node.getType(),
-                testCaseList,
-                localTargetDirectory + fileName);
-        Controller.dataQueue.add(testCaseList);
     }
 
     public static void close(){

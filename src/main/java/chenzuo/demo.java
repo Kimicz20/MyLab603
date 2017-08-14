@@ -48,7 +48,13 @@ public class demo extends JFrame {
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
-        contentPane.setLayout(null);
+        contentPane.setLayout(new BorderLayout());
+        JTextArea jta;
+        jta = new JTextArea(10, 15);
+        jta.setTabSize(4);
+        jta.setFont(new Font("标楷体", Font.BOLD, 16));
+        jta.setLineWrap(true);// 激活自动换行功能
+        jta.setWrapStyleWord(true);// 激活断行不断字功能
 
         final JButton btnNewButton = new JButton("connect1");
         btnNewButton.addActionListener(new ActionListener() {
@@ -60,19 +66,13 @@ public class demo extends JFrame {
                 File file = jfc.getSelectedFile();
                 if (file != null) {
                     Controller.Run(new Pair<String, File>("Function", file));
-                    try {
-                        Thread.sleep(700);
-                        while (!Controller.dataQueue.isEmpty()){
-                            logger.debug(Controller.dataQueue.poll().size());
-                        }
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
-                    }
                 }
             }
         });
         btnNewButton.setBounds(29, 50, 93, 23);
-        contentPane.add(btnNewButton);
+
+        contentPane.add(jta, BorderLayout.CENTER);
+        contentPane.add(btnNewButton, BorderLayout.SOUTH);
 
 //        final JButton btnNewButton2 = new JButton("connect2");
 //        btnNewButton2.addActionListener(new ActionListener() {

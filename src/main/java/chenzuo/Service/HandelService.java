@@ -26,9 +26,11 @@ public class HandelService implements Callable {
     private Socket socket = null;
     private ScpClientUtil scpclient;
 
-    //executor to deal with receive
-    private ExecutorService receiveService = Executors.newCachedThreadPool();
+    private ResultService resultService;
 
+    //executor to deal with receive
+    ExecutorService receiveService = Executors.newCachedThreadPool();
+//    private ScheduledThreadPoolExecutor scheduledService = new ScheduledThreadPoolExecutor(1);
     // Stream based on socket
     DataOutputStream dos = null;
     DataInputStream dis = null;
@@ -44,6 +46,7 @@ public class HandelService implements Callable {
         this.node = node;
         this.files = files;
         scpclient = new ScpClientUtil(node.getIp());
+        resultService = new ResultService(node.getType());
     }
 
     // connect socket
@@ -59,20 +62,6 @@ public class HandelService implements Callable {
             logger.error("fail to connect server");
         }
         return false;
-    }
-
-    // close socket
-    public void close() {
-        try {
-            node.setBusy(false);
-            dos.close();
-            dis.close();
-            socket.close();
-            scpclient.close();
-            logger.debug("socket close");
-        } catch (IOException e) {
-            logger.error("close socket error ,cause by " + e.getMessage());
-        }
     }
 
     // send xml files
@@ -110,7 +99,9 @@ public class HandelService implements Callable {
 //                logger.debug("receive data:" + data);
                 //get index of result file and convert
                 if (data.contains("index")) {
-                    receiveService.submit(new RecvTransService(node,data.split("#")[1]));
+                    String index = data.split("#")[1];
+                    receiveService.submit(new RecvTransService(node,index));
+//                  logger.debug(receiveService.take().get());
                 } else if ("exit".equals(data)) {
                     logger.debug("success receive all files");
                     break;
@@ -121,15 +112,39 @@ public class HandelService implements Callable {
         }
     }
 
+    //get Result
+    private void getResult() {
+
+    }
+
+    // close socket
+    public void close() {
+        try {
+            node.setBusy(false);
+            dos.close();
+            dis.close();
+            socket.close();
+            scpclient.close();
+            logger.debug("socket close");
+        } catch (IOException e) {
+            logger.error("close socket error ,cause by " + e.getMessage());
+        }
+    }
+
     public Object call() throws Exception {
         // 1.create connection
         boolean isCon = connection();
         if (isCon) {
             // 2.send data
             send();
-            // 3.receive result
+
+            // 3.receive file
             recv();
-            // 4.close socket
+
+            // 4.get result
+            getResult();
+
+            // 5.close socket
             close();
         }
         return null;

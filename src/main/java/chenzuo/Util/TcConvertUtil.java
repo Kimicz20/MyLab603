@@ -227,8 +227,9 @@ public class TcConvertUtil {
 	 *            从服务器获取的字符串
 	 * @return
 	 */
-	public static void buildTestCaseList(String type,List<TestCase> list, String fileName) {
+	public static List<TestCase> buildTestCaseList(String type, String fileName) {
 
+		List<TestCase> list =  new ArrayList<>();
 		String str = readFileByLines(fileName);
 
 		// 1.按*号将测试用例划分
@@ -258,7 +259,7 @@ public class TcConvertUtil {
 			if (t.contains(":")) {
 				String[] r = t.split(":");
 				//时间约束
-				if(type == "time"){
+				if(type == "Time"){
 					String tStatus , eStatus ;
 					if("1".equals(r[0])){
 						tStatus = "测试用例有误,无法对应到执行程序";
@@ -282,7 +283,7 @@ public class TcConvertUtil {
 							exeState = "测试耗时:" + r[1];
 							break;
 					}
-					if (type != "function") {
+					if (type != "Function") {
 						testCaseResult.setExeTime(Double.valueOf(r[1]));
 						testCaseResult.setTakeoff_alt(Double.valueOf(r[2].substring("takeoff_alt".length())));
 						testCaseResult.setBattery_remaining(Double.valueOf(r[3].substring("battery_remaining".length())));
@@ -306,7 +307,7 @@ public class TcConvertUtil {
 				 */
 			String result = "";
 			//时间约束
-			if(type =="time"){
+			if(type =="Time"){
 				result = stringRegEx(s, "resultStatus:([\\s|\\S]*?)]").get(0).split(":")[1];
 				if (result == "3") {
 					result = "程序出现出现死循环或者抛出异常!";
@@ -341,7 +342,7 @@ public class TcConvertUtil {
 		}
 
 		//性能测试除去多个0%
-		if (type == "performance") {
+		if (type == "Performance") {
 			// 处理多个0%
 			for (int i = 0; i < list.size(); i++) {
 				if (i + 1 < list.size()) {
@@ -352,6 +353,7 @@ public class TcConvertUtil {
 				}
 			}
 		}
+		return list;
 	}
 
 	/**
@@ -415,18 +417,18 @@ public class TcConvertUtil {
 				"F:\\陈佐\\3.项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\Util\\result.txt");
 
 		List<TestCase> list = new ArrayList();
-		buildTestCaseList("time",list, str);
+//		buildTestCaseList("time",list, str);
 		for (TestCase t:list){
 			System.out.println(t);
 		}
-//		Map  m =testCaseStatistics(list);
-//		Map<String, List<Pair>> hb = (Map<String, List<Pair>>) m.get("high-battery");
-//		for (Map.Entry<String, List<Pair>> entry : hb.entrySet()) {
-//			System.out.println(entry.getKey());
-//			for (Pair pair : entry.getValue()) {
-//				System.out.println("\t"+pair);
-//			}
-//
-//		}
+		Map  m =testCaseStatistics(list);
+		Map<String, List<Pair>> hb = (Map<String, List<Pair>>) m.get("high-battery");
+		for (Map.Entry<String, List<Pair>> entry : hb.entrySet()) {
+			System.out.println(entry.getKey());
+			for (Pair pair : entry.getValue()) {
+				System.out.println("\t"+pair);
+			}
+
+		}
 	}
 }
