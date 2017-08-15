@@ -1,5 +1,6 @@
 package chenzuo.Service;
 
+import chenzuo.Bean.Constants;
 import chenzuo.Bean.TestCase;
 import chenzuo.Util.FileUtil;
 import chenzuo.Util.TcConvertUtil;
@@ -11,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by geek on 2017/8/14.
@@ -22,15 +22,14 @@ public class ResultService {
 
     private ScheduledThreadPoolExecutor scheduledService = new ScheduledThreadPoolExecutor(1);
 
-//    private List<String> nameList = new ArrayList();
     public static List<TestCase> list = Collections.synchronizedList(new ArrayList());
 
     public ResultService(String type) {
         scheduledService.scheduleAtFixedRate(
                 new GetResult(type),
                 0,
-                5,
-                TimeUnit.SECONDS);
+                Constants.PEROID,
+                Constants.TIME_TYPE);
     }
 
     class GetResult implements Runnable {
@@ -56,11 +55,16 @@ public class ResultService {
                             list.addAll(TcConvertUtil.buildTestCaseList(type, fileName));
                             FileUtil.delete(fileName);
                             logger.debug("list size:"+list.size());
+                            if(Constants.ISFINISH.get()){
+                                logger.debug("scheduledService close");
+                                scheduledService.shutdown();
+                            }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                 }
             }
+
         }
     }
 

@@ -1,5 +1,6 @@
 package chenzuo.Service;
 
+import chenzuo.Bean.Constants;
 import chenzuo.Bean.IPNode;
 import chenzuo.Util.FileUtil;
 import chenzuo.Util.ScpClientUtil;
@@ -22,7 +23,6 @@ public class HandelService implements Callable {
 
     // server's IP and Port
     protected IPNode node;
-    protected int PORT = 5555;
 
     private Socket socket = null;
     private ScpClientUtil scpclient;
@@ -54,7 +54,7 @@ public class HandelService implements Callable {
     public boolean connection() {
         //connect socket
         try {
-            socket = new Socket(node.getIp(), PORT);
+            socket = new Socket(node.getIp(), Constants.PORT);
             if (socket != null) {
                 logger.debug("connection " + node.getIp() + " success");
                 return true;
@@ -87,9 +87,9 @@ public class HandelService implements Callable {
     // receive result
     public void recv() {
         int bufferSize = 500;
-        boolean isContinue=true;
         byte[] buf = new byte[bufferSize];
         String data = "";
+        int fIndex =1;
         try {
             dis = new DataInputStream(socket.getInputStream());
             while ( dis.read(buf) != -1) {
@@ -99,9 +99,12 @@ public class HandelService implements Callable {
                 //get index of result file and convert
                 if (data.contains("index")) {
                     String index = data.split("#")[1];
+                    fIndex++;
                     receiveService.submit(new RecvTransService(node,index));
 //                  logger.debug(receiveService.take().get());
                 } else if ("exit".equals(data)) {
+                    //finish work
+                    Constants.ISFINISH.set(true);
                     logger.debug("success receive all files");
                     break;
                 }
@@ -109,11 +112,6 @@ public class HandelService implements Callable {
         } catch (Exception e) {
             logger.debug("failed receive , cause by " + e.getCause());
         }
-    }
-
-    //get Result
-    private void getResult() {
-
     }
 
     // close socket
@@ -140,10 +138,7 @@ public class HandelService implements Callable {
             // 3.receive file
             recv();
 
-            // 4.get result
-            getResult();
-
-            // 5.close socket
+            // 4.close socket
             close();
         }
         return null;

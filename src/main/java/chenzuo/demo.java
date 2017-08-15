@@ -1,5 +1,6 @@
 package chenzuo;
 
+import chenzuo.Bean.Constants;
 import chenzuo.Bean.Pair;
 import chenzuo.Controller.Controller;
 import chenzuo.Service.ResultService;
@@ -34,7 +35,13 @@ public class demo extends JFrame {
         Controller.Run(new Pair<String, File>("Function", file));
         while(true){
             try {
-                System.out.println(ResultService.list.size());
+                if(Constants.ISFINISH.get()){
+                    break;
+                }
+                int size;
+                if((size = ResultService.list.size())!=0){
+                    System.out.println(size);
+                }
                 TimeUnit.SECONDS.sleep(2);
             } catch (InterruptedException e) {
                 e.printStackTrace();
