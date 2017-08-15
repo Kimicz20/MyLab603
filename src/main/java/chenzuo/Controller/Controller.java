@@ -11,7 +11,7 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * MutliThread with Socket and Scp
@@ -25,7 +25,6 @@ public class Controller {
     private static long MAX_FILE_SIZE = 20 * 1024 * 1024;
     // deploy
     private static IPDeploy IP_TYPE_DEPLOY = new IPDeploy();
-    static Future<String> conFuture;
     // thread pool
     private static ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -59,19 +58,19 @@ public class Controller {
     public static void execute(String type, int num, File[] file) {
 
         //pre start
-        if (preCon) {
-            conFuture = executorService.submit(new PreConnService(new IPNode("192.168.0.131")));
-            try {
-                Thread.sleep(30);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
         List<IPNode> nodes;
         int i = 0;
         if ((nodes = IP_TYPE_DEPLOY.findNodeFree(num)) != null) {
             for (IPNode node : nodes) {
                 node.setType(type);
+                if (preCon) {
+                    executorService.submit(new PreConnService(node));
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
                 executorService.submit(new HandelService(node, file[i]));
                 i++;
             }
@@ -97,11 +96,6 @@ public class Controller {
         } catch (Exception e) {
             logger.error(e.getMessage());
         } finally {
-//            try {
-//                logger.debug(conFuture.get());
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
             Close();
         }
     }

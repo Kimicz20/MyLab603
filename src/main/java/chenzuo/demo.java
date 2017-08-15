@@ -2,6 +2,7 @@ package chenzuo;
 
 import chenzuo.Bean.Pair;
 import chenzuo.Controller.Controller;
+import chenzuo.Service.ResultService;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -11,6 +12,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 public class demo extends JFrame {
 
@@ -27,16 +29,28 @@ public class demo extends JFrame {
 
         PropertyConfigurator.configure("src/log4j.properties");
 
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    demo frame = new demo();
-                    frame.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+
+        File file = new File("F:\\陈佐\\3.项目\\虚拟仿真平台进度\\MyLab603\\src\\xx#1.xml");
+        Controller.Run(new Pair<String, File>("Function", file));
+        while(true){
+            try {
+                System.out.println(ResultService.list.size());
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        });
+        }
+
+//        EventQueue.invokeLater(new Runnable() {
+//            public void run() {
+//                try {
+//                    demo frame = new demo();
+//                    frame.setVisible(true);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
     }
 
     /**
@@ -73,6 +87,7 @@ public class demo extends JFrame {
 
         contentPane.add(jta, BorderLayout.CENTER);
         contentPane.add(btnNewButton, BorderLayout.SOUTH);
+
 
 //        final JButton btnNewButton2 = new JButton("connect2");
 //        btnNewButton2.addActionListener(new ActionListener() {

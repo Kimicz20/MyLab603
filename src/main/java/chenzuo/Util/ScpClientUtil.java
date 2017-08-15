@@ -105,13 +105,13 @@ public class ScpClientUtil {
     }
 
     public static void main(String[] args) {
-        ScpClientUtil rec = new ScpClientUtil("192.168.0.131");
+        ScpClientUtil rec = new ScpClientUtil("10.1.16.89");
         //执行命令
-        System.out.println(rec.execute("sh /home/8_11_Finall/start.sh"));
+        System.out.println(rec.execute("ifconfig"));
 
 //        String remoteFile = "/home/8_11_Finall/Test/result/testaa.txt";
-//        String localTargetDirectory = "E:\\项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\Util\\ssh";
-//        rec.getFile(remoteFile, localTargetDirectory);
+//        String LOCAL_TARGET_PATH = "E:\\项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\Util\\ssh";
+//        rec.getFile(remoteFile, LOCAL_TARGET_PATH);
 //        String remoteTargetDirectory= "/home/8_11_Finall/Test/testcase/";
 //        File f = new File("E:\\项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\Util\\ssh\\testaa.txt");
 //        rec.putFile(f.getAbsolutePath(),"testaa.txt",remoteTargetDirectory,null);

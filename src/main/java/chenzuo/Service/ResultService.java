@@ -1,8 +1,10 @@
 package chenzuo.Service;
 
 import chenzuo.Bean.TestCase;
+import chenzuo.Util.FileUtil;
 import chenzuo.Util.TcConvertUtil;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -20,21 +22,20 @@ public class ResultService {
 
     private ScheduledThreadPoolExecutor scheduledService = new ScheduledThreadPoolExecutor(1);
 
-    private List<String> nameList = new ArrayList();
-    static List<TestCase> list = Collections.synchronizedList(new ArrayList());
+//    private List<String> nameList = new ArrayList();
+    public static List<TestCase> list = Collections.synchronizedList(new ArrayList());
 
     public ResultService(String type) {
         scheduledService.scheduleAtFixedRate(
                 new GetResult(type),
                 0,
-                30,
+                5,
                 TimeUnit.SECONDS);
     }
 
     class GetResult implements Runnable {
 
         private String type;
-        int index =0;
 
         @Override
         public void run() {
@@ -46,29 +47,21 @@ public class ResultService {
         }
 
         public void readfile() {
-            ++index;
-//            System.out.println("index :"+index);
-            String filepath = "F:\\陈佐\\3.项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\File\\";
-            File file = new File(filepath);
+            File file = new File(FileUtil.LOCAL_TARGET_PATH);
             if (file.isDirectory()) {
                 String[] filelist = file.list();
                 for (int i = 0; i < filelist.length; i++) {
-                    if (!nameList.contains(filelist[i])) {
-                        nameList.add(filelist[i]);
+                    String fileName = FileUtil.LOCAL_TARGET_PATH + filelist[i];
                         try {
-                            list.addAll(TcConvertUtil.buildTestCaseList(type, filepath + filelist[i]));
+                            list.addAll(TcConvertUtil.buildTestCaseList(type, fileName));
+                            FileUtil.delete(fileName);
                             logger.debug("list size:"+list.size());
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                    }
                 }
             }
-            if(nameList.size() == 7){
-                scheduledService.shutdown();
-            }
         }
-
     }
 
     public static List<TestCase> getResult() {
@@ -76,6 +69,7 @@ public class ResultService {
     }
 
     public static void main(String[] args) {
+        PropertyConfigurator.configure("src/log4j.properties");
         ResultService s = new ResultService("Function");
     }
 

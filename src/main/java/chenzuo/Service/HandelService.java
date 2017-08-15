@@ -1,6 +1,7 @@
 package chenzuo.Service;
 
 import chenzuo.Bean.IPNode;
+import chenzuo.Util.FileUtil;
 import chenzuo.Util.ScpClientUtil;
 import org.apache.log4j.Logger;
 
@@ -30,7 +31,7 @@ public class HandelService implements Callable {
 
     //executor to deal with receive
     ExecutorService receiveService = Executors.newCachedThreadPool();
-//    private ScheduledThreadPoolExecutor scheduledService = new ScheduledThreadPoolExecutor(1);
+
     // Stream based on socket
     DataOutputStream dos = null;
     DataInputStream dis = null;
@@ -66,13 +67,11 @@ public class HandelService implements Callable {
 
     // send xml files
     public void send() {
-
-        String remoteTargetDirectory = "/home/8_13_Finall/Test/testcase/";
         try {
             dos = new DataOutputStream(socket.getOutputStream());
             for (File f : files) {
                 //send file
-                scpclient.putFile(f.getAbsolutePath(), f.getName(), remoteTargetDirectory, null);
+                scpclient.putFile(f.getAbsolutePath(), f.getName(), FileUtil.REMOTE_TC_PATH, null);
                 //send filename
                 dos.write(f.getName().getBytes());
                 dos.flush();

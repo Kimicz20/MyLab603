@@ -2,6 +2,7 @@ package chenzuo.Service;
 
 import chenzuo.Bean.IPNode;
 import chenzuo.Controller.Controller;
+import chenzuo.Util.FileUtil;
 import chenzuo.Util.ScpClientUtil;
 import org.apache.log4j.Logger;
 
@@ -24,17 +25,15 @@ public class RecvTransService implements Callable {
         this.id = id;
     }
 
-    private void recvTSFileAndConvert() {
-        String remotePath = "/home/8_13_Finall/Test/result/";
+    private void recvRSFile() {
         String fileName = "result_" + node.getType() + "_" + id + ".txt";
-        String localTargetDirectory = "F:\\陈佐\\3.项目\\虚拟仿真平台进度\\MyLab603\\src\\main\\java\\chenzuo\\File\\";
 
         long l = System.currentTimeMillis();
-        scpclient.getFile(remotePath + fileName, localTargetDirectory);
+        scpclient.getFile(FileUtil.REMOTE_RS_PATH + fileName, FileUtil.LOCAL_TARGET_PATH);
         logger.debug("file " + id + " get ok,cost time is:" + (System.currentTimeMillis() - l) + " ms");
 
         //delete all files
-        scpclient.execute("rm -rf "+remotePath+"*");
+        scpclient.execute("rm -rf "+FileUtil.REMOTE_RS_PATH +"*");
     }
 
     public static void close(){
@@ -43,7 +42,7 @@ public class RecvTransService implements Callable {
 
     @Override
     public Object call() throws Exception {
-        recvTSFileAndConvert();
+        recvRSFile();
         return null;
     }
 }
