@@ -3,6 +3,7 @@ package ThreadWaitNotify;
 import java.sql.Connection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by geek on 2017/8/20.

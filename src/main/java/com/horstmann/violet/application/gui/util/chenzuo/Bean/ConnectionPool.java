@@ -4,35 +4,46 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 
-public class IPDeploy {
-
-	//
-	private static BlockingQueue waitQueue = new LinkedBlockingQueue(4);
+public class ConnectionPool {
 
 	//list of ip
-	private List<IPNode> ips = new ArrayList<>();
+	private LinkedList<IPNode> pool = new LinkedList<IPNode>();
 	
-	public IPDeploy(){
+	public ConnectionPool(){
 		buildFromProperties();
 	}
 
-    public List<IPNode> findNodeFree(int index){
-		List<IPNode> nodes = new ArrayList<>(index);
-		int i=1;
-		for(IPNode node:ips){
-			if(i<=index && !node.isBusy()){
-				node.setBusy(true);
-				nodes.add(node);
-				i++;
-			}else{
-				break;
+	public void releaseConnection(IPNode connection){
+		if (connection !=null){
+			synchronized (pool){
+				pool.addLast(connection);
+				pool.notifyAll();
 			}
 		}
-		return nodes;
+	}
+	public IPNode fetchConnection(long mills) throws InterruptedException{
+		synchronized (pool){
+			if(mills <= 0){
+				while(pool.isEmpty()){
+					pool.wait();
+				}
+				return pool.removeFirst();
+			}else{
+				long future = System.currentTimeMillis() + mills;
+				long remaining = mills;
+				while(pool.isEmpty() && remaining >0){
+					pool.wait(remaining);
+					remaining = future - System.currentTimeMillis();
+				}
+				IPNode result =null;
+				if(!pool.isEmpty()){
+					result = pool.removeFirst();
+				}
+				return result;
+			}
+		}
 	}
 
 	//read properties
@@ -53,7 +64,7 @@ public class IPDeploy {
 					String[] tmpL = value.split(",");
 					for(String r:tmpL) {
 						IPNode node = new IPNode(r);
-						ips.add(node);
+						pool.addLast(node);
 					}
 				}
 			}
@@ -65,6 +76,6 @@ public class IPDeploy {
 
 	//test 
 	public static void main(String[] args) {
-		IPDeploy p = new IPDeploy();
+		ConnectionPool p = new ConnectionPool();
 	}
 }

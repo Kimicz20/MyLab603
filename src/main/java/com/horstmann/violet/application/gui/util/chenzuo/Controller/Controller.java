@@ -1,17 +1,18 @@
 package com.horstmann.violet.application.gui.util.chenzuo.Controller;
 
-import com.horstmann.violet.application.gui.util.chenzuo.Bean.IPDeploy;
+import com.horstmann.violet.application.gui.util.chenzuo.Bean.ConnectionPool;
 import com.horstmann.violet.application.gui.util.chenzuo.Bean.IPNode;
 import com.horstmann.violet.application.gui.util.chenzuo.Bean.Pair;
 import com.horstmann.violet.application.gui.util.chenzuo.Service.HandelService;
 import com.horstmann.violet.application.gui.util.chenzuo.Service.PreConnService;
+import com.horstmann.violet.application.gui.util.chenzuo.Util.FileUtil;
 import org.apache.log4j.Logger;
 
 import java.io.File;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * MutliThread with Socket and Scp
@@ -21,10 +22,8 @@ import java.util.concurrent.TimeUnit;
 public class Controller {
 
     private static Logger logger = Logger.getLogger(Controller.class);
-
-    private static long MAX_FILE_SIZE = 20 * 1024 * 1024;
     // deploy
-    private static IPDeploy IP_TYPE_DEPLOY = new IPDeploy();
+    private static ConnectionPool pool = new ConnectionPool();
     // thread pool
     private static ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -33,46 +32,35 @@ public class Controller {
 
     // deploy and handle
     private static void handleMapping(Pair<String, File> data) {
-
         if (data == null) {
             logger.debug("please choose file to send!");
         }
         String type = data.getFirst();
-        File[] files = {data.getSecond()};
-        //big testcase deply to 2 servers
-        if (files[0].length() > MAX_FILE_SIZE) {
-            //1.spilt file
-            files = fileSpilt(data);
-            //2.choose server
-            execute(type, 2, files);
-        } else {
-            execute(type, 1, files);
-        }
+        execute(type,FileUtil.XMLSpilt(data));
     }
 
-    /////to do
-    private static File[] fileSpilt(Pair<String, File> data) {
-        return null;
-    }
+    public static void execute(String type, File[] file) {
 
-    public static void execute(String type, int num, File[] file) {
-
-        //pre start
-        List<IPNode> nodes;
-        int i = 0;
-        if ((nodes = IP_TYPE_DEPLOY.findNodeFree(num)) != null) {
-            for (IPNode node : nodes) {
-                node.setType(type);
-                if (preCon) {
-                    executorService.submit(new PreConnService(node));
+        IPNode node = null;
+        for (int i=0;i<file.length;i++){
+            try {
+                //
+                node = pool.fetchConnection(TimeUnit.MICROSECONDS.toMicros(1000));
+                if(node !=null){
                     try {
-                        TimeUnit.SECONDS.sleep(1);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        //pre start
+                        if (preCon) {
+                            executorService.submit(new PreConnService(node));
+                            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
+                        }
+                        //execute handelService
+                        executorService.submit(new HandelService(node,type,file[i]));
+                    }finally {
+                        pool.releaseConnection(node);
                     }
                 }
-                executorService.submit(new HandelService(node, file[i]));
-                i++;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }

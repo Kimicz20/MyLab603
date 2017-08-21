@@ -18,15 +18,17 @@ public class RecvTransService implements Callable {
     private static ScpClientUtil scpclient;
     private IPNode node;
     private String id;
+    private String type;
 
-    public RecvTransService(IPNode node, String id) {
+    public RecvTransService(IPNode node, String type,String id) {
         scpclient = new ScpClientUtil(node.getIp());
         this.node = node;
         this.id = id;
+        this.type = type;
     }
 
     private void recvRSFile() {
-        String fileName = "result_" + node.getType() + "_" + id + ".txt";
+        String fileName = "result_" + type + "_" + id + ".txt";
 
         long l = System.currentTimeMillis();
         scpclient.getFile(FileUtil.REMOTE_RS_PATH + fileName, FileUtil.LOCAL_TARGET_PATH);

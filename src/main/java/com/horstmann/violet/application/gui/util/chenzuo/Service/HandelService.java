@@ -23,6 +23,7 @@ public class HandelService implements Callable {
 
     // server's IP and Port
     protected IPNode node;
+    protected String type;
 
     private Socket socket = null;
     private ScpClientUtil scpclient;
@@ -39,15 +40,16 @@ public class HandelService implements Callable {
     // testcases' Files
     File[] files = null;
 
-    public HandelService(IPNode node, File files) {
-        this(node, new File[]{files});
+    public HandelService(IPNode node,String type, File files) {
+        this(node, type,new File[]{files});
     }
 
-    public HandelService(IPNode node, File[] files) {
+    public HandelService(IPNode node,String type, File[] files) {
         this.node = node;
+        this.type = type;
         this.files = files;
         scpclient = new ScpClientUtil(node.getIp());
-        resultService = new ResultService(node.getType());
+        resultService = new ResultService(type);
     }
 
     // connect socket
@@ -100,7 +102,7 @@ public class HandelService implements Callable {
                 if (data.contains("index")) {
                     String index = data.split("#")[1];
                     fIndex++;
-                    receiveService.submit(new RecvTransService(node,index));
+                    receiveService.submit(new RecvTransService(node,type,index));
 //                  logger.debug(receiveService.take().get());
                 } else if ("exit".equals(data)) {
                     //finish work
@@ -117,7 +119,6 @@ public class HandelService implements Callable {
     // close socket
     public void close() {
         try {
-            node.setBusy(false);
             dos.close();
             dis.close();
             socket.close();
