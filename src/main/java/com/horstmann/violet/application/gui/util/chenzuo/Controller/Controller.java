@@ -35,8 +35,7 @@ public class Controller {
         if (data == null) {
             logger.debug("please choose file to send!");
         }
-        String type = data.getFirst();
-        execute(type,FileUtil.XMLSpilt(data));
+        execute(data.getFirst(),FileUtil.XMLSpilt(data));
     }
 
     public static void execute(String type, File[] file) {
